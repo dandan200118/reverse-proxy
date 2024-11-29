@@ -1,35 +1,43 @@
-export default async function handler(req, res) {
-  const url = 'https://api.anthropic.com' + req.url;
+// pages/api/[...path].js
 
-  // 复制请求头，并添加自定义的 Headers
-  const headers = {
-    ...req.headers,
-    'Your-Header-Name': 'Your-Header-Value',
-    // 如需添加更多自定义 Header，在此处添加
-    // 'Another-Header-Name': 'Another-Header-Value',
-  };
+export default async function handler(req, res) {
+  // 获取请求的路径参数
+  const { path } = req.query;
+
+  // 构建目标 URL
+  const targetUrl = `https://api.anthropic.com/${path.join('/')}`;
 
   try {
-    // 使用 fetch 进行请求转发
-    const response = await fetch(url, {
+    // 构建请求头，添加自定义请求头
+    const headers = {
+      ...req.headers,
+      'Your-Header-Name': 'Your-Header-Value', // 请将此处替换为您需要的请求头键值对
+    };
+    delete headers.host; // 删除 host 头，避免干扰
+
+    // 发起请求到目标网站
+    const response = await fetch(targetUrl, {
       method: req.method,
-      headers: headers,
+      headers,
       body: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined,
     });
 
     // 设置响应状态码
     res.status(response.status);
 
-    // 设置响应头
+    // 转发目标网站的响应头
     response.headers.forEach((value, key) => {
       res.setHeader(key, value);
     });
 
-    // 获取响应数据并返回
+    // 获取响应内容
     const data = await response.arrayBuffer();
+
+    // 发送响应内容
     res.send(Buffer.from(data));
   } catch (error) {
-    console.error('Error occurred while proxying request:', error);
+    // 处理错误
+    console.error('Proxy Error:', error);
     res.status(500).send('Internal Server Error');
   }
 }
