@@ -1,16 +1,5 @@
 {
   "rewrites": [
-    {"source": "/(.*)", "destination": "https://api.anthropic.com/$1"}
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "User-Agent",
-          "value": "PostmanRuntime/7.38.0"
-        }
-      ]
-    }
+    { "source": "/(.*)", "destination": "/api/proxy/$1" }
   ]
 }
