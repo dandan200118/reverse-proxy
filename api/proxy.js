@@ -1,32 +1,35 @@
 export default async function handler(req, res) {
   const url = 'https://api.anthropic.com' + req.url;
 
-  // 复制原始请求头
-  const headers = { ...req.headers };
-
-  // 添加自定义请求头
-  headers['User-Agent'] = 'Your-Header-Value';
-  // 如果需要，继续添加其他请求头
-  // headers['Another-Header-Name'] = 'PostmanRuntime/7.38.0';
+  // 复制请求头，并添加自定义的 Headers
+  const headers = {
+    ...req.headers,
+    'Your-Header-Name': 'Your-Header-Value',
+    // 如需添加更多自定义 Header，在此处添加
+    // 'Another-Header-Name': 'Another-Header-Value',
+  };
 
   try {
+    // 使用 fetch 进行请求转发
     const response = await fetch(url, {
       method: req.method,
       headers: headers,
       body: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined,
     });
 
-    // 转发响应状态码和头信息
+    // 设置响应状态码
     res.status(response.status);
+
+    // 设置响应头
     response.headers.forEach((value, key) => {
       res.setHeader(key, value);
     });
 
-    // 发送响应体
+    // 获取响应数据并返回
     const data = await response.arrayBuffer();
     res.send(Buffer.from(data));
   } catch (error) {
-    console.error('请求转发时发生错误：', error);
+    console.error('Error occurred while proxying request:', error);
     res.status(500).send('Internal Server Error');
   }
 }
